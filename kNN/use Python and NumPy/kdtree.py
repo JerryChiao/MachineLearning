@@ -71,6 +71,8 @@ def createKDTree(root, data_list):
 
     # choose the dimension with large variance
     dimension = len(data_list[0])
+    #print "data size: " + str(data_len) + " dimension: " + str(dimension)
+
     split_dim = 0
     max_var = 0
     for i in range(dimension):
@@ -83,13 +85,13 @@ def createKDTree(root, data_list):
             max_var = var
             split_dim = i
 
-    data_list.sort(key=lambda x:x[split_dim])
+    data_list= data_list[data_list[:, split_dim].argsort()]
 
     point = data_list[data_len/2]
 
     root = KDNode(point, split_dim)
     root.left = createKDTree(root.left, data_list[0:data_len/2])
-    root.right = createKDTree(root.right, data_list[data_len/2+1, data_len])
+    root.right = createKDTree(root.right, data_list[data_len/2+1:data_len])
     return root
 
 
@@ -178,8 +180,11 @@ def mainTest():
         trainingMat[i, :] = img2vector('trainingDigits/%s' % fileNameStr)
 
     # build the kdtree
+
+    print "start to build kd tree ..."
     kd_tree = KDNode()
     kd_tree = createKDTree(kd_tree, trainingMat)
+    print "kd tree finished"
 
     testFileList = listdir('testDigits')
     errorCount = 0.0
