@@ -11,7 +11,7 @@ class KDNode:
     """
 
     """
-    def __init__(self, point=None, split=None, LL=None, RR=None):
+    def __init__(self, point=None, split=None, LL=None, RR=None, label=None):
         """
 
         :param point: data point
@@ -24,6 +24,7 @@ class KDNode:
         self.split = split
         self.left = LL
         self.right = RR
+        self.label = label
 
 
 def computeVariance(data_list):
@@ -58,7 +59,7 @@ def computeDist(data1, data2):
     return math.sqrt(sum)
 
 
-def createKDTree(root, data_list):
+def createKDTree(root, data_list, label_list):
     """
     create the KD Tree
     :param root:
@@ -85,13 +86,18 @@ def createKDTree(root, data_list):
             max_var = var
             split_dim = i
 
-    data_list= data_list[data_list[:, split_dim].argsort()]
+    data_index = data_list[:, split_dim].argsort()
+    label_list = np.array(label_list)
+    data_list= data_list[data_index]
+
+    label_list = label_list[data_index]
 
     point = data_list[data_len/2]
+    label = label_list[data_len/2];
 
-    root = KDNode(point, split_dim)
-    root.left = createKDTree(root.left, data_list[0:data_len/2])
-    root.right = createKDTree(root.right, data_list[data_len/2+1:data_len])
+    root = KDNode(point, split=split_dim, label=label)
+    root.left = createKDTree(root.left, data_list[0:data_len/2], label_list[0: data_len/2])
+    root.right = createKDTree(root.right, data_list[data_len/2+1:data_len], label_list[data_len/2+1:data_len])
     return root
 
 
@@ -102,10 +108,11 @@ def findNN(root, query, K=1):
     :param query:
     :return: the nearest node as well as the distance
     """
+
     min_dist = np.array([computeDist(query, root.point)])
     sorted_indices = min_dist.argsort()
     temp_root = root
-    curr_point = [root.point]
+    curr_point = [root]
     node_list = []
 
     while temp_root:
@@ -143,7 +150,7 @@ def findNN(root, query, K=1):
 
                 if min_dist[min_index] > curr_dist:
                     min_dist[min_index] = curr_dist
-                    curr_point[min_index] = temp_root.point
+                    curr_point[min_index] = temp_root
                     sorted_indices = min_dist.argsort()
 
     return curr_point, min_dist
@@ -161,10 +168,26 @@ def KNN(root, K, target):
     curr_point, _ = findNN(root, target, K)
     count = {}
     for point in curr_point:
-        count[point] += 1
+        if count.has_key(point.label):
+            count[point.label] += 1
+        else:
+            count[point.label] = 1
 
     sortedCount = sorted(count.iteritems(), key=operator.itemgetter(1), reverse=True)
     return sortedCount[0][0]
+
+def print_kdtree(root):
+    """
+    print the kd tree
+    :param root:
+    :return:
+    """
+    if root.left:
+        print " ",
+        print_kdtree(root.left)
+    if root.right:
+        print " ",
+        print_kdtree(root.right)
 
 
 def mainTest():
@@ -180,11 +203,13 @@ def mainTest():
         trainingMat[i, :] = img2vector('trainingDigits/%s' % fileNameStr)
 
     # build the kdtree
-
     print "start to build kd tree ..."
+    print hwLabels
     kd_tree = KDNode()
-    kd_tree = createKDTree(kd_tree, trainingMat)
+    kd_tree = createKDTree(kd_tree, trainingMat, hwLabels)
     print "kd tree finished"
+    #print_kdtree(kd_tree)
+    #exit(0)
 
     testFileList = listdir('testDigits')
     errorCount = 0.0
@@ -194,14 +219,15 @@ def mainTest():
         fileStr = fileNameStr.split('.')[0]
         classNumStr = int(fileStr.split('_')[0])
         vectorUnderTest = img2vector('testDigits/%s' % fileNameStr)
+        classifierResult = KNN(kd_tree, 5, vectorUnderTest[0])
 
-        classifierResult = KNN(kd_tree, 3, vectorUnderTest)
         print "the classifier came back with: %d, the real answer is: %d" % (classifierResult, classNumStr)
         if (classifierResult != classNumStr): errorCount += 1.0
     print "\nthe total number of errors is: %d" % errorCount
     print "\nthe total error rate is: %f" % (errorCount / float(mTest))
 
 
+# note: kd-tree for the handwriting is not good enough, the dimension is higher than the number of the samples.
 mainTest()
 
 
