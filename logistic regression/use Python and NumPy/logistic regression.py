@@ -26,6 +26,8 @@ from numpy import *
 from os import listdir
 
 
+# let's use p(x) = exp(W*x)/(1 + exp(W*x)) to
+
 def loadData(direction):
     trainfileList=listdir(direction)
     m=len(trainfileList)
@@ -50,6 +52,9 @@ def sigmoid(inX):
     return 1.0/(1+exp(-inX))
 
 #alpha:步长，maxCycles:迭代次数，可以调整
+# use L(w) =  log(\Pi p(y=1)^{y_i}(1 - p(y=1))^{1 - y_i}
+# dev(L(w)) = \sum{y_i - p(y)}*x;
+
 def gradAscent(dataArray,labelArray,alpha,maxCycles):
     dataMat=mat(dataArray)    #size:m*n
     labelMat=mat(labelArray)      #size:m*1
@@ -61,7 +66,55 @@ def gradAscent(dataArray,labelArray,alpha,maxCycles):
         weigh=weigh+alpha*dataMat.transpose()*error
     return weigh
 
-def classfy(testdir,weigh):
+
+def sgd_logistic(data_input, data_label):
+    """
+    stochastic gradient decent
+    :param data_input: input matrix
+    :param data_label:  output vector
+    :return:
+    """
+    alpha = 0.01
+    m, n = shape(data_input)
+    weights = ones((n))
+
+    for i in range(m):
+        h = sigmoid(sum(data_input[i]*weights))
+        error = data_label[i] - h
+        weights = weights + alpha * error * data_input[i]
+    return weights.reshape([1024,1])
+
+def sgd_rmsprop_logistic(data_input, data_label):
+    """
+    stochastic gradient decent
+    :param data_input: input matrix
+    :param data_label:  output vector
+    :return:
+    """
+    alpha = 0.01
+    m, n = shape(data_input)
+    weights = ones((n))
+    history = 0
+    for i in range(m):
+        h = sigmoid(sum(data_input[i]*weights))
+        error = data_label[i] - h
+        # weights = weights + alpha * error * data_input[i]
+        weights = weights + alpha * RMSProp(error*data_input[i], history, 0.9)
+    return weights.reshape([1024,1])
+
+
+def RMSProp(curr, history, gamma):
+    """
+    RMS propagation
+    :param curr:
+    :param history:
+    :return:
+    """
+    history = gamma * history + (1 - gamma)* curr * curr
+    return curr/(sqrt(history) + 0.001)
+
+
+def classify(testdir,weigh):
     dataArray,labelArray=loadData(testdir)
     dataMat=mat(dataArray)
     labelMat=mat(labelArray)
@@ -80,20 +133,29 @@ def classfy(testdir,weigh):
                 error+=1
                 print 'error'
     print 'error rate is:','%.4f' %(error/m)
-                
+
+
 def digitRecognition(trainDir,testDir,alpha=0.07,maxCycles=10):
     data,label=loadData(trainDir)
     weigh=gradAscent(data,label,alpha,maxCycles)
-    classfy(testDir,weigh)
+    classify(testDir,weigh)
     
         
-    
-    
-    
-        
-    
-        
-        
-        
-        
-        
+# in this test case, sgd is better than batch update
+if __name__ == "__main__":
+    train_dir = "train/"
+    test_dir = "test/"
+    alpha = 0.01
+    max_cycles = 100
+    data, label = loadData(train_dir)
+    print "=== batch gradient decent ==="
+    weights = gradAscent(data, label, alpha, max_cycles)
+    classify(test_dir, weights)
+
+    print "=== sgd ==="
+    weights = sgd_logistic(data, label)
+    classify(test_dir, weights)
+
+    print "====== rmps sgd ======"
+    weights = sgd_rmsprop_logistic(data, label)
+    classify(test_dir, weights)
