@@ -50,7 +50,7 @@ def handwritingClassTest():
     mTest = len(testFileList)
     for i in range(mTest):
         fileNameStr = testFileList[i]
-        fileStr = fileNameStr.split('.')[0]     
+        fileStr = fileNameStr.split('.')[0]
         classNumStr = int(fileStr.split('_')[0])
         vectorUnderTest = img2vector('testDigits/%s' % fileNameStr)
         classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
