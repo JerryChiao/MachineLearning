@@ -49,6 +49,7 @@ class DeepQNetwork:
 
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
+
     def _build_net(self):
         """
         build the network
@@ -92,8 +93,8 @@ class DeepQNetwork:
                 l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
 
             with tf.variable_scope('l2'):
-                w2 = tf.get_variable('w2', [n_l1, self.n_actions], \
-                                      initializer=w_initializer,\
+                w2 = tf.get_variable('w2', [n_l1, self.n_actions],
+                                      initializer=w_initializer,
                                       collections=c_names)
             
                 b2 = tf.get_variable('b2', [1, self.n_actions],

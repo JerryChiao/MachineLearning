@@ -84,6 +84,7 @@ def sgd_logistic(data_input, data_label):
         weights = weights + alpha * error * data_input[i]
     return weights.reshape([1024,1])
 
+
 def sgd_rmsprop_logistic(data_input, data_label):
     """
     stochastic gradient decent

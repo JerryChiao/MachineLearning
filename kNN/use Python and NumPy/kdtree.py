@@ -106,7 +106,7 @@ def findNN(root, query, K=1):
     find the nearest point & dist
     :param root:
     :param query:
-    :return: the nearest node as well as the distance
+    :return: the nearest Node as well as the distance
     """
 
     min_dist = np.array([computeDist(query, root.point)])

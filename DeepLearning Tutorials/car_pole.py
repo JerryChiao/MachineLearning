@@ -29,8 +29,7 @@ for i_episode in range(1000):
         observation_, reward, done, info = env.step(action) # 获取下一个 state
         x, x_dot, theta, theta_dot = observation_   # 细分开, 为了修改原配的 reward   # x 是车的水平位移, 所以 r1 是车越偏离中心, 分越少
                                                                 # theta 是棒子离垂直的角度, 角度越大, 越不垂直. 所以 r2 是棒越垂直, 分越高
-
-        x, x_dot, theta, theta_dot = observation_
+                                                                # 由于倒立摆是2阶系统，reward的设计其实考虑到了这一点。所以：深度学习并不是完全不依赖于背景知识的！！！！
         r1 = (env.x_threshold - abs(x))/env.x_threshold - 0.8
         r2 = (env.theta_threshold_radians - abs(theta))/env.theta_threshold_radians - 0.5
         reward = r1 + r2   # 总 reward 是 r1 和 r2 的结合, 既考虑位置, 也考虑角度, 这样 DQN 学习更有效率

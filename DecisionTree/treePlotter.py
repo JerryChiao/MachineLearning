@@ -45,7 +45,7 @@ def plotMidText(cntrPt, parentPt, txtString):
 def plotTree(myTree, parentPt, nodeTxt):#if the first key tells you what feat was split on
     numLeafs = getNumLeafs(myTree)  #this determines the x width of this tree
     #depth = getTreeDepth(myTree)
-    firstStr = myTree.keys()[0]     #the text label for this node should be this
+    firstStr = myTree.keys()[0]     #the text label for this Node should be this
     cntrPt = (plotTree.xOff + (1.0 + float(numLeafs))/2.0/plotTree.totalW, plotTree.yOff)
     plotMidText(cntrPt, parentPt, nodeTxt)
     plotNode(firstStr, cntrPt, parentPt, decisionNode)
@@ -54,7 +54,7 @@ def plotTree(myTree, parentPt, nodeTxt):#if the first key tells you what feat wa
     for key in secondDict.keys():
         if type(secondDict[key]).__name__=='dict':#test to see if the nodes are dictonaires, if not they are leaf nodes   
             plotTree(secondDict[key],cntrPt,str(key))        #recursion
-        else:   #it's a leaf node print the leaf node
+        else:   #it's a leaf Node print the leaf Node
             plotTree.xOff = plotTree.xOff + 1.0/plotTree.totalW
             plotNode(secondDict[key], (plotTree.xOff, plotTree.yOff), cntrPt, leafNode)
             plotMidText((plotTree.xOff, plotTree.yOff), cntrPt, str(key))
